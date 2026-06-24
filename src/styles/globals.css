@@ -1,0 +1,182 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 20% 98%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --primary: 210 79% 42%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 20% 96%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 210 18% 94%;
+    --muted-foreground: 215 16% 42%;
+    --accent: 174 100% 27%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 65% 68%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 214 24% 90%;
+    --input: 214 24% 90%;
+    --ring: 210 79% 42%;
+    --radius: 0.75rem;
+
+    /* Civic brand */
+    --civic-blue: 210 79% 42%;
+    --civic-teal: 174 100% 27%;
+    --civic-amber: 43 95% 56%;
+    --civic-coral: 0 65% 68%;
+
+    /* Spacing */
+    --page-x: 1rem;
+    --page-y: 1rem;
+    --touch-min: 44px;
+
+    /* Shadows */
+    --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.08);
+    --shadow-elevated: 0 4px 20px rgba(21, 101, 192, 0.1);
+    --shadow-fab: 0 6px 24px rgba(21, 101, 192, 0.32);
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background font-sans text-foreground antialiased;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  .page-container {
+    @apply mx-auto w-full max-w-lg px-4;
+  }
+
+  .page-container-admin {
+    @apply mx-auto w-full max-w-7xl;
+  }
+
+  .text-display {
+    @apply font-display font-bold tracking-tight text-foreground;
+  }
+
+  .text-civic-muted {
+    @apply text-sm leading-relaxed text-muted-foreground;
+  }
+
+  .surface-card {
+    @apply rounded-card border bg-card shadow-card;
+  }
+
+  .surface-elevated {
+    box-shadow: var(--shadow-elevated);
+    @apply rounded-card border bg-card;
+  }
+
+  .touch-target {
+    min-height: var(--touch-min);
+    min-width: var(--touch-min);
+  }
+
+  .gradient-civic-hero {
+    background: linear-gradient(135deg, #1565c0 0%, #00897b 100%);
+  }
+
+  .gradient-civic-subtle {
+    background: linear-gradient(180deg, #e3f2fd 0%, #f8fafc 100%);
+  }
+
+  .gradient-admin-header {
+    background: linear-gradient(90deg, #f8fafc 0%, #e3f2fd 50%, #f8fafc 100%);
+  }
+
+  .animate-slide-up {
+    animation: slide-up 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .animate-scale-in {
+    animation: scale-in 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted)) 0%,
+      hsl(var(--secondary)) 50%,
+      hsl(var(--muted)) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+  }
+}
+
+@layer utilities {
+  .pb-safe-nav {
+    padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+  }
+
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
