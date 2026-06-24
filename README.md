@@ -2,10 +2,27 @@
 
 **Community-powered civic infrastructure reporting — identify, report, validate, track, and resolve local issues with accountability.**
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-civicresolve--ten.vercel.app-1565C0?style=for-the-badge)](https://civicresolve-ten.vercel.app)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Vite-6-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
 [![Tests](https://img.shields.io/badge/Tests-175%20Vitest%20%7C%2024%20E2E-22C55E)](./src/test)
+
+**Live app:** [https://civicresolve-ten.vercel.app](https://civicresolve-ten.vercel.app)
+
+---
+
+## Live demo
+
+| Link | Description |
+|------|-------------|
+| [Open app](https://civicresolve-ten.vercel.app) | Splash → onboarding → auth |
+| [Demo sign-in](https://civicresolve-ten.vercel.app/auth) | Citizen, admin, youth, parent demos (no password) |
+| [Report an issue](https://civicresolve-ten.vercel.app/app/report) | Photo/video wizard with AI assist |
+| [Community verify](https://civicresolve-ten.vercel.app/app/community) | Corroborate nearby reports |
+| [Admin dashboard](https://civicresolve-ten.vercel.app/admin/dashboard) | Queue, moderation, analytics |
+
+Deployed on **Vercel** with mock services enabled — no API keys required for the demo.
 
 ---
 
@@ -504,11 +521,27 @@ npm run test:watch    # Vitest watch mode
 
 ## Deploy (Vercel)
 
-1. Import repository → **Framework preset: Vite**
-2. **Build command:** `npm run build`
-3. **Output directory:** `dist`
-4. Add `VITE_*` env vars in project settings (no secrets in git)
-5. `vercel.json` includes SPA rewrites for React Router
+**Production:** [https://civicresolve-ten.vercel.app](https://civicresolve-ten.vercel.app)  
+**Vercel project:** [parthkapoor2402s-projects/civicresolve](https://vercel.com/parthkapoor2402s-projects/civicresolve)
+
+Auto-deploys from `main` via GitHub integration.
+
+| Setting | Value |
+|---------|-------|
+| Framework | Vite |
+| Build command | `npm run build` |
+| Output directory | `dist` |
+| SPA rewrites | `vercel.json` |
+
+Production env (set in Vercel dashboard):
+
+```env
+VITE_USE_MOCKS=true
+VITE_APP_NAME=CivicResolve
+VITE_BACKEND_PROVIDER=mock
+VITE_AI_PROVIDER=mock
+VITE_MAPS_PROVIDER=mock
+```
 
 ---
 

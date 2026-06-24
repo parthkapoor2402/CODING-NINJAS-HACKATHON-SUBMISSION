@@ -1,5 +1,11 @@
 {
   "name": "civic-resolve",
+  "description": "CivicResolve — mobile-first civic issue reporting platform. Report, verify, track, and resolve local infrastructure problems with AI-assisted intake, community validation, and transparent accountability.",
+  "homepage": "https://civicresolve-ten.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/parthkapoor2402/CODING-NINJAS-HACKATHON-SUBMISSION.git"
+  },
   "private": true,
   "version": "0.1.0",
   "type": "module",
