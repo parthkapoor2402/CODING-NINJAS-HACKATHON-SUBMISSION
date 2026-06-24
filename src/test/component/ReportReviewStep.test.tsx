@@ -108,6 +108,9 @@ describe('ReportReviewStep', () => {
       </MemoryRouter>,
     );
     expect(screen.getByTestId('report-success')).toBeInTheDocument();
-    expect(screen.getByText(/spoke up for your block/i)).toBeInTheDocument();
+    expect(screen.getByText(/started real momentum/i)).toBeInTheDocument();
+    expect(screen.getByTestId('neighborhood-queue-step')).toBeInTheDocument();
+    expect(screen.getByTestId('impact-visibility-feedback')).toBeInTheDocument();
+    expect(screen.getByTestId('success-track-report')).toBeInTheDocument();
   }, 15000);
 });

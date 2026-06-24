@@ -38,7 +38,7 @@ describe('Integration: community flows', () => {
     const verifyBtn = await screen.findByTestId('verify-issue-btn');
     fireEvent.click(verifyBtn);
     await waitFor(() => {
-      expect(screen.getByText(/Confirmation recorded/i)).toBeInTheDocument();
+      expect(screen.getByTestId('verify-feedback')).toHaveTextContent(/crew review|strengthened/i);
     });
   });
 

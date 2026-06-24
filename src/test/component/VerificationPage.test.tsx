@@ -8,12 +8,14 @@ import { resetMockCorroboration } from '@/services/mock/mockCorroboration';
 import { useAuthStore } from '@/store/authStore';
 import { services } from '@/services/registry';
 import { VERIFICATION_SUPPORT_BONUS } from '@/domain/trust-updates';
+import { resetVerifyActivityStore } from '@/store/verifyActivityStore';
 
 describe('VerificationPage', () => {
   beforeEach(() => {
     resetMockAuthSession();
     resetMockReports();
     resetMockCorroboration();
+    resetVerifyActivityStore();
     useAuthStore.setState({ session: null, isLoading: false, error: null });
   });
 
@@ -38,6 +40,7 @@ describe('VerificationPage', () => {
       expect(corroborateSpy).toHaveBeenCalledWith('report-003', 'user-parent-1');
       const trustAfter = useAuthStore.getState().session!.user.trust.verificationScore;
       expect(trustAfter).toBe(trustBefore + VERIFICATION_SUPPORT_BONUS);
+      expect(screen.getByTestId('verify-feedback')).toHaveTextContent(/crew review|strengthened/i);
     });
   });
 });

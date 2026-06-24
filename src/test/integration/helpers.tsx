@@ -11,6 +11,7 @@ import { useAuthStore } from '@/store/authStore';
 import { useOnboardingStore } from '@/store/onboardingStore';
 import { useReportDraftStore } from '@/store/reportDraftStore';
 import { resetMockAuthSession } from '@/services/mock/mockAuth';
+import { resetVerifyActivityStore } from '@/store/verifyActivityStore';
 
 export function renderApp(initialPath: string): RenderResult {
   return render(
@@ -28,6 +29,7 @@ export async function resetIntegrationState(): Promise<void> {
   resetMediaCaptureAdapter();
   resetGeolocationAdapter();
   resetMockAuthSession();
+  resetVerifyActivityStore();
   useOnboardingStore.getState().resetOnboarding();
   useOnboardingStore.getState().hydrate();
   useReportDraftStore.getState().resetDraft();

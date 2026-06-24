@@ -5,14 +5,27 @@ interface TrustScoreRingProps {
   score: number;
   size?: 'sm' | 'md' | 'lg';
   className?: string;
+  variant?: 'default' | 'on-dark';
 }
 
 const sizeMap = { sm: 48, md: 72, lg: 96 };
 
-export function TrustScoreRing({ score, size = 'md', className }: TrustScoreRingProps) {
+export function TrustScoreRing({
+  score,
+  size = 'md',
+  className,
+  variant = 'default',
+}: TrustScoreRingProps) {
   const dim = sizeMap[size];
   const color =
-    score >= 70 ? 'text-civic-teal-500' : score >= 40 ? 'text-civic-amber-500' : 'text-civic-coral-500';
+    variant === 'on-dark'
+      ? 'text-white'
+      : score >= 70
+        ? 'text-civic-teal-500'
+        : score >= 40
+          ? 'text-civic-amber-500'
+          : 'text-civic-coral-500';
+  const trackColor = variant === 'on-dark' ? 'text-white/25' : 'text-muted';
 
   return (
     <div
@@ -22,7 +35,7 @@ export function TrustScoreRing({ score, size = 'md', className }: TrustScoreRing
     >
       <svg className="absolute inset-0 -rotate-90" viewBox="0 0 36 36">
         <path
-          className="text-muted"
+          className={trackColor}
           stroke="currentColor"
           strokeWidth="3"
           fill="none"

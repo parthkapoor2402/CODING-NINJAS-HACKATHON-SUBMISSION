@@ -6,7 +6,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Vite-6-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
-[![Tests](https://img.shields.io/badge/Tests-175%20Vitest%20%7C%2024%20E2E-22C55E)](./src/test)
+[![Tests](https://img.shields.io/badge/Tests-217%20Vitest%20%7C%2024%20E2E-22C55E)](./src/test)
 
 **Live app:** [https://civicresolve-ten.vercel.app](https://civicresolve-ten.vercel.app)
 
@@ -23,6 +23,17 @@
 | [Admin dashboard](https://civicresolve-ten.vercel.app/admin/dashboard) | Queue, moderation, analytics |
 
 Deployed on **Vercel** with mock services enabled — no API keys required for the demo.
+
+### Level 5 polish (latest)
+
+- **Neighborhood Pulse** — ward metrics, dynamic microcopy, and “your impact on the ward” on Home, Verify, and Rewards
+- **Civic next action** — context-aware “Your next move” prompt on Home
+- **Visual hierarchy pass** — distinct card surfaces, status chips, mission/issue/reward differentiation
+- **Verification delight** — escalation toasts, completion banners, streak milestones
+- **Report success payoff** — ward journey queue, pending recognition framing
+- **Accountability strip** — transparency footer on core citizen screens
+
+See [`level5-polish-summary.md`](./level5-polish-summary.md) and [`before-vs-after-product-review.md`](./before-vs-after-product-review.md).
 
 ---
 
@@ -64,15 +75,17 @@ CivicResolve addresses these by making **trust, verification, and resolution sta
 
 ### Citizen experience
 
+- **Neighborhood pulse** — confirmed today, ward responsiveness, challenge momentum (curated summaries, not fake live spam)
+- **Dynamic home** — contextual hero, today's civic missions, next-action prompt, local impact strip
 - **Image and short-video reporting** with validation (type, size, duration) and preview
 - **Geolocation** with manual pin correction when GPS is denied or imprecise
 - **AI categorization and copy suggestions** (mock or Grok via env)
 - **Severity estimation** and editable report details before submit
 - **Duplicate detection** with support-existing-report routing (not punitive blocking)
 - **Suspicious-report quality checks** framed as protective review, not accusation
-- **Community verification** queue for pending reports
-- **Status tracking** with issue timelines and resolution proof placeholders
-- **Rewards, trust score, badges, streaks** — redeemable only after verification
+- **Community verification** queue with escalation delight and honest “neighbor verification” framing
+- **Status tracking** with resolution journey timelines, social proof, and follow-to-resolution cards
+- **Rewards progression** — verified impact summary, badge journey, next unlocks, momentum banner, leaderboard insights
 - **Youth / family supervised mode** with capped rewards and no partner redemption
 
 ### Operations (admin)
@@ -286,16 +299,17 @@ src/
 ├── routes/              # Citizen + admin route tables
 ├── layouts/             # CitizenShell, AdminShell, auth guards
 ├── features/            # Page modules
-│   ├── home/            # Neighborhood pulse, nearby preview
-│   ├── reporting/       # 4-step wizard + media components
-│   ├── verification/    # Community confirm queue
+│   ├── home/            # Pulse, missions, map/feed, next action
+│   ├── reporting/       # 4-step wizard + success payoff
+│   ├── verification/    # Community confirm queue + streak
 │   ├── feed/            # Nearby issues, issue detail
-│   ├── tracking/        # My reports
-│   ├── rewards/         # Points, catalog, badges
+│   ├── tracking/        # My reports + resolution journey
+│   ├── rewards/         # Progression, badges, challenges, catalog
+│   ├── profile/         # Civic identity, strengths, trust breakdown
 │   ├── youth-mode/      # Supervised family mode
 │   ├── onboarding/      # Splash, permissions, auth
 │   └── admin-*/         # Dashboard, queue, moderation, analytics
-├── components/          # Shared UI (cards, states, rewards, admin)
+├── components/          # Shared UI (cards, pulse, civic, motion, states)
 ├── domain/              # Pure business logic (no I/O)
 ├── services/
 │   ├── mock/            # Default MVP implementations
@@ -312,7 +326,7 @@ src/
     └── e2e/             # Playwright happy paths
 ```
 
-**Documentation:** [`FINAL_HANDOFF.md`](./FINAL_HANDOFF.md) · [`architecture.md`](./architecture.md) · [`judge-demo-script.md`](./judge-demo-script.md)
+**Documentation:** [`FINAL_HANDOFF.md`](./FINAL_HANDOFF.md) · [`architecture.md`](./architecture.md) · [`judge-demo-script.md`](./judge-demo-script.md) · [`level5-polish-summary.md`](./level5-polish-summary.md)
 
 ---
 
@@ -371,7 +385,7 @@ Open **http://localhost:5173**
 ### Run tests
 
 ```bash
-# All Vitest (175 tests)
+# All Vitest (217 tests)
 npm test
 
 # By layer
@@ -457,9 +471,10 @@ Curated seed data for judge and stakeholder demos:
 
 ### MVP (shipped)
 
-- Citizen app: onboarding, report, verify, track, nearby, rewards, youth mode
+- Citizen app: onboarding, report, verify, track, nearby, rewards, profile, youth mode
+- Level 5 UX polish: neighborhood pulse, next action, visual hierarchy, verification delight
 - Admin app: dashboard, queue, issue detail, moderation, analytics, hotspots
-- Mock services, 175 Vitest + 24 Playwright tests, Vercel deploy config
+- Mock services, 217 Vitest + 24 Playwright tests, Vercel deploy
 
 ### Next phase
 

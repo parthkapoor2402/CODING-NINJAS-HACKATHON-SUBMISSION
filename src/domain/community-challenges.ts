@@ -6,6 +6,9 @@ export interface CommunityChallenge {
   scope: ChallengeScope;
   description: string;
   goalLabel: string;
+  goalTarget: number;
+  currentCount: number;
+  momentumLabel: string;
   progressPercent: number;
   optional: boolean;
   status: 'upcoming' | 'active' | 'completed';
@@ -17,7 +20,10 @@ export const SEED_CHALLENGES: CommunityChallenge[] = [
     title: 'School block walk-through',
     scope: 'school',
     description: 'Students and families verify sidewalk and lighting issues near campus — supervised proposals only for youth.',
-    goalLabel: '12 verified issues',
+    goalLabel: 'verified issues near campus',
+    goalTarget: 12,
+    currentCount: 7,
+    momentumLabel: '+3 verified this week',
     progressPercent: 58,
     optional: true,
     status: 'active',
@@ -27,7 +33,10 @@ export const SEED_CHALLENGES: CommunityChallenge[] = [
     title: 'Ward 12 pothole sprint',
     scope: 'ward',
     description: 'Support existing pothole reports instead of filing duplicates. Recognition only — no prize lottery.',
-    goalLabel: '20 corroborations',
+    goalLabel: 'corroborations on pothole reports',
+    goalTarget: 20,
+    currentCount: 14,
+    momentumLabel: '+5 confirmations today',
     progressPercent: 72,
     optional: true,
     status: 'active',
@@ -37,7 +46,10 @@ export const SEED_CHALLENGES: CommunityChallenge[] = [
     title: 'Neighbor intro week',
     scope: 'neighborhood',
     description: 'Confirm one real issue you can see on your street.',
-    goalLabel: '1 verification per household',
+    goalLabel: 'verifications per household',
+    goalTarget: 48,
+    currentCount: 48,
+    momentumLabel: 'Completed last week',
     progressPercent: 100,
     optional: true,
     status: 'completed',

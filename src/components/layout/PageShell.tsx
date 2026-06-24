@@ -1,10 +1,13 @@
 import { cn } from '@/lib/utils';
+import { CivicProgressBar } from '@/components/motion/CivicProgressBar';
 
 interface CitizenPageShellProps {
   children: React.ReactNode;
   className?: string;
   noPadding?: boolean;
   animate?: boolean;
+  stagger?: boolean;
+  'data-testid'?: string;
 }
 
 export function CitizenPageShell({
@@ -12,13 +15,17 @@ export function CitizenPageShell({
   className,
   noPadding = false,
   animate = true,
+  stagger = false,
+  'data-testid': testId,
 }: CitizenPageShellProps) {
   return (
     <div
+      data-testid={testId}
       className={cn(
         'w-full',
         !noPadding && 'px-0',
-        animate && 'animate-slide-up',
+        animate && !stagger && 'animate-slide-up',
+        stagger && 'motion-stagger',
         className,
       )}
     >
@@ -75,10 +82,12 @@ export function ReportShell({ children, step, totalSteps, title }: ReportShellPr
           Step {step + 1} of {totalSteps}
         </p>
         <h2 className="mt-1 font-display text-xl font-bold">{title}</h2>
-        <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-muted">
-          <div
-            className="h-full rounded-full bg-civic-blue-600 transition-all duration-300 ease-out"
-            style={{ width: `${progress}%` }}
+        <div className="mt-4">
+          <CivicProgressBar
+            value={progress}
+            variant="default"
+            size="md"
+            aria-label="Report flow progress"
           />
         </div>
       </div>

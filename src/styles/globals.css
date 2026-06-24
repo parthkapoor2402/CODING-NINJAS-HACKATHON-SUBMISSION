@@ -53,6 +53,9 @@
 
   body {
     @apply bg-background font-sans text-foreground antialiased;
+    background-image:
+      radial-gradient(ellipse 120% 80% at 50% -20%, rgba(21, 101, 192, 0.06), transparent 55%),
+      radial-gradient(ellipse 80% 50% at 100% 0%, rgba(0, 137, 123, 0.04), transparent 45%);
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   }
 
@@ -93,6 +96,26 @@
     @apply rounded-card border bg-card;
   }
 
+  .surface-mission-featured {
+    @apply rounded-xl border-2 border-civic-blue-300/80 bg-gradient-to-br from-civic-blue-50 via-white to-civic-teal-50/30 shadow-elevated;
+  }
+
+  .surface-issue-live {
+    @apply rounded-card border-2 border-civic-amber-400/60 bg-gradient-to-br from-civic-amber-50/50 via-white to-civic-teal-50/30 shadow-elevated;
+  }
+
+  .surface-badge-earned {
+    @apply rounded-xl border border-civic-teal-300/80 bg-gradient-to-br from-civic-teal-50 via-white to-civic-teal-50/30 shadow-sm;
+  }
+
+  .surface-badge-locked {
+    @apply rounded-xl border-2 border-dashed border-muted-foreground/20 bg-muted/25;
+  }
+
+  .status-pulse-dot {
+    animation: status-pulse 2s ease-in-out infinite;
+  }
+
   .touch-target {
     min-height: var(--touch-min);
     min-width: var(--touch-min);
@@ -116,6 +139,93 @@
 
   .animate-scale-in {
     animation: scale-in 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .animate-pulse-soft {
+    animation: pulse-soft 2s ease-in-out infinite;
+  }
+
+  .animate-fade-in {
+    animation: fade-in 280ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .motion-stagger > * {
+    animation: slide-up 380ms cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+
+  .motion-stagger > *:nth-child(1) {
+    animation-delay: 0ms;
+  }
+  .motion-stagger > *:nth-child(2) {
+    animation-delay: 45ms;
+  }
+  .motion-stagger > *:nth-child(3) {
+    animation-delay: 90ms;
+  }
+  .motion-stagger > *:nth-child(4) {
+    animation-delay: 135ms;
+  }
+  .motion-stagger > *:nth-child(5) {
+    animation-delay: 180ms;
+  }
+  .motion-stagger > *:nth-child(6) {
+    animation-delay: 225ms;
+  }
+  .motion-stagger > *:nth-child(7) {
+    animation-delay: 270ms;
+  }
+  .motion-stagger > *:nth-child(8) {
+    animation-delay: 315ms;
+  }
+  .motion-stagger > *:nth-child(n + 9) {
+    animation-delay: 360ms;
+  }
+
+  .card-interactive {
+    @apply transition-[transform,box-shadow,border-color] duration-200 ease-out;
+  }
+
+  .card-interactive:active {
+    transform: scale(0.985);
+  }
+
+  @media (hover: hover) {
+    .card-interactive:hover {
+      box-shadow: var(--shadow-elevated);
+    }
+  }
+
+  .state-locked {
+    opacity: 0.85;
+    filter: grayscale(0.15);
+    transition:
+      opacity 300ms ease,
+      border-color 300ms ease,
+      box-shadow 300ms ease,
+      transform 300ms ease;
+  }
+
+  .state-unlocked {
+    border-color: rgba(0, 137, 123, 0.35);
+    box-shadow: var(--shadow-card);
+    animation: unlock-reveal 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .civic-progress-fill {
+    transition: width 700ms cubic-bezier(0.4, 0, 0.2, 1);
+    animation: progress-enter 700ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .civic-loading-pulse {
+    animation: civic-loading-pulse 1.8s ease-in-out infinite;
+  }
+
+  .empty-icon-enter {
+    animation: scale-in 360ms cubic-bezier(0.4, 0, 0.2, 1) 80ms both;
+  }
+
+  .success-icon-enter {
+    animation: success-pop 480ms cubic-bezier(0.34, 1.2, 0.64, 1) both;
   }
 
   .shimmer {
@@ -178,5 +288,69 @@
   }
   50% {
     opacity: 0.7;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes progress-enter {
+  from {
+    width: 0;
+    opacity: 0.6;
+  }
+}
+
+@keyframes unlock-reveal {
+  from {
+    opacity: 0.7;
+    transform: translateY(4px);
+    box-shadow: none;
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes civic-loading-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes success-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.88);
+  }
+  70% {
+    transform: scale(1.04);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes status-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(0.85);
   }
 }

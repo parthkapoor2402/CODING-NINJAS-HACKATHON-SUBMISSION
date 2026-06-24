@@ -6,10 +6,12 @@ import { EmptyState } from '@/components/states/EmptyState';
 import { StatusBadge } from '@/components/StatusBadge';
 import { Chip } from '@/components/ui/chip';
 import { IssueTimeline } from '@/components/issues/IssueTimeline';
-import { ResolutionProofPlaceholder } from '@/components/issues/ResolutionProofPlaceholder';
-import { SuspiciousIssueNotice } from '@/components/issues/SuspiciousIssueNotice';
-import { StateTransitionExplainer } from '@/components/issues/StateTransitionExplainer';
 import { IssueUpdateThread } from '@/components/issues/IssueUpdateThread';
+import { SuspiciousIssueNotice } from '@/components/issues/SuspiciousIssueNotice';
+import { ImpactBecauseOfYou } from '@/components/tracking/ImpactBecauseOfYou';
+import { IssueSocialProofStrip } from '@/components/tracking/IssueSocialProofStrip';
+import { FollowToResolutionCard } from '@/components/tracking/FollowToResolutionCard';
+import { ResolvedImpactCard } from '@/components/tracking/ResolvedImpactCard';
 import { SupportExistingAction } from '@/components/issues/SupportExistingAction';
 import { MergedIssueNotice } from '@/components/issues/MergedIssueNotice';
 import { TrustParticipationCard } from '@/components/issues/TrustParticipationCard';
@@ -116,7 +118,7 @@ export default function IssueDetailPage() {
               </div>
             </div>
 
-            <StateTransitionExplainer report={report} />
+            <IssueSocialProofStrip report={report} />
           </div>
         </div>
 
@@ -131,7 +133,11 @@ export default function IssueDetailPage() {
 
         {suspiciousReason ? <SuspiciousIssueNotice reason={suspiciousReason} /> : null}
 
+        <ImpactBecauseOfYou report={report} />
+
         <IssueTimeline report={report} />
+
+        <FollowToResolutionCard report={report} />
 
         {user && !isDuplicate ? (
           <SupportExistingAction
@@ -143,9 +149,9 @@ export default function IssueDetailPage() {
 
         <TrustParticipationCard />
 
-        <IssueUpdateThread reportId={report.id} />
+        <IssueUpdateThread reportId={report.id} variant="narrative" />
 
-        {report.status === 'resolved' ? <ResolutionProofPlaceholder report={report} /> : null}
+        {report.status === 'resolved' ? <ResolvedImpactCard report={report} /> : null}
       </div>
     </CitizenPageShell>
   );

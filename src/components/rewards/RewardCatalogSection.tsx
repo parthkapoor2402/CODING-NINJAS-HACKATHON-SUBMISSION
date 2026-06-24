@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Chip } from '@/components/ui/chip';
 import { Gift, Lock } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface RewardCatalogSectionProps {
   catalog: CatalogLockState[];
@@ -67,7 +68,10 @@ export function RewardCatalogSection({
           <Card
             key={item.id}
             data-testid={`reward-catalog-item-${item.id}`}
-            className={locked ? 'opacity-80' : 'border-civic-teal-200'}
+            className={cn(
+              'transition-all duration-300',
+              locked ? 'state-locked' : 'state-unlocked',
+            )}
           >
             <CardContent className="flex items-center justify-between p-4">
               <div>

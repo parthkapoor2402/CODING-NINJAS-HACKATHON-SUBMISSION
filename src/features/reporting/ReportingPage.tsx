@@ -19,7 +19,7 @@ export default function ReportingPage() {
 
   if (submittedReportId) {
     return (
-      <div data-testid="report-flow">
+      <div className="px-4 pt-2" data-testid="report-flow">
         <SuccessStep />
       </div>
     );

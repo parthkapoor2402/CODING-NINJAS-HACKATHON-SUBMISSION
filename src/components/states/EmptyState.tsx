@@ -30,7 +30,7 @@ export function EmptyState({
     <div
       data-testid={testId}
       className={cn(
-        'flex flex-col items-center rounded-card border border-dashed px-6 py-10 text-center animate-fade-in',
+        'flex flex-col items-center rounded-card border border-dashed px-6 py-10 text-center animate-slide-up',
         variant === 'civic' ? 'border-civic-blue-100 bg-civic-blue-50/40' : 'bg-card',
         className,
       )}
@@ -38,7 +38,7 @@ export function EmptyState({
       {illustration ?? (
         <div
           className={cn(
-            'mb-4 flex h-16 w-16 items-center justify-center rounded-2xl',
+            'empty-icon-enter mb-4 flex h-16 w-16 items-center justify-center rounded-2xl',
             variant === 'civic' ? 'bg-civic-blue-100 text-civic-blue-600' : 'bg-muted text-muted-foreground',
           )}
         >

@@ -24,11 +24,11 @@ export function SuccessState({
   return (
     <div
       className={cn(
-        'flex flex-col items-center rounded-card border border-civic-teal-500/20 bg-civic-teal-50/50 px-6 py-10 text-center animate-scale-in',
+        'flex flex-col items-center rounded-card border border-civic-teal-500/20 bg-civic-teal-50/50 px-6 py-10 text-center animate-slide-up',
         className,
       )}
     >
-      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-civic-teal-500 text-white shadow-elevated">
+      <div className="success-icon-enter mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-civic-teal-500 text-white shadow-elevated">
         <CheckCircle2 className="h-8 w-8" strokeWidth={2.5} />
       </div>
       <h3 className="font-display text-lg font-bold text-civic-teal-600">{title}</h3>

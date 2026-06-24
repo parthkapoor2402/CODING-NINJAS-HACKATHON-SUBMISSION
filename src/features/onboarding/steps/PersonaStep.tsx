@@ -74,6 +74,11 @@ export function PersonaStep({ selected, onSelect }: PersonaStepProps) {
           );
         })}
       </div>
+
+      <p className="rounded-lg border border-civic-teal-100 bg-civic-teal-50/40 px-3 py-2 text-center text-[11px] leading-relaxed text-civic-teal-900">
+        Every persona earns recognition through <span className="font-semibold">verified impact</span> — not
+        report volume.
+      </p>
     </div>
   );
 }
