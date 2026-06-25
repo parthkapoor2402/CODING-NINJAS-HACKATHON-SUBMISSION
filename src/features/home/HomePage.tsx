@@ -5,6 +5,7 @@ import { GuestModeBanner } from '@/components/guest/GuestModeBanner';
 import { CivicNextActionPrompt } from '@/components/civic/CivicNextActionPrompt';
 import { CivicAccountabilityStrip } from '@/components/civic/CivicAccountabilityStrip';
 import { ActionFeedbackToast, type ActionFeedback } from '@/components/home/ActionFeedbackToast';
+import { HomeVerifyRecommendation } from '@/components/home/HomeVerifyRecommendation';
 import { HomeDynamicHero } from '@/components/home/HomeDynamicHero';
 import { LocalImpactStrip } from '@/components/home/LocalImpactStrip';
 import { NeighborhoodActivityStrip } from '@/components/home/NeighborhoodActivityStrip';
@@ -37,7 +38,17 @@ import { applyTrustUpdate, useCurrentUser } from '@/store/authStore';
 import { services } from '@/services/registry';
 import { seedMedia } from '@/services/mock/seed';
 import { ROUTES } from '@/lib/constants';
+import { USER_ANCHOR } from '@/domain/verification-orchestrator';
+import { recommendVerification } from '@/services/ai/verification-orchestrator-agent';
+import { useVerificationNudgeStore } from '@/store/verificationNudgeStore';
+import { useVerifyActivityStore } from '@/store/verifyActivityStore';
+import type { VerifyOpportunity } from '@/domain/verification-orchestrator';
 import type { Report } from '@/types';
+
+function recentCount24h(dates: string[]): number {
+  const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+  return dates.filter((d) => new Date(d).getTime() >= cutoff).length;
+}
 
 function isOpen(report: Report): boolean {
   return report.status !== 'merged' && report.status !== 'resolved';
@@ -56,6 +67,13 @@ export default function HomePage() {
     () => new Set(),
   );
   const [feedback, setFeedback] = useState<ActionFeedback | null>(null);
+  const [topVerifyPick, setTopVerifyPick] = useState<VerifyOpportunity | null>(null);
+
+  const dismissedIds = useVerifyActivityStore((s) => s.dismissedIds);
+  const activityDates = useVerifyActivityStore((s) => s.activityDates);
+  const nudgeHistory = useVerificationNudgeStore((s) => s.history);
+  const snoozedUntil = useVerificationNudgeStore((s) => s.snoozedUntil);
+  const getRecentNudgeCount24h = useVerificationNudgeStore((s) => s.getRecentNudgeCount24h);
 
   useEffect(() => {
     services.reports.list().then((data) => {
@@ -71,6 +89,52 @@ export default function HomePage() {
     const t = window.setTimeout(() => setFeedback(null), 4000);
     return () => window.clearTimeout(t);
   }, [feedback]);
+
+  useEffect(() => {
+    if (!user || loading) return;
+    let cancelled = false;
+    const snoozedReportIds = Object.entries(snoozedUntil)
+      .filter(([, until]) => new Date(until).getTime() > Date.now())
+      .map(([id]) => id);
+
+    void recommendVerification(
+      {
+        userId: user.id,
+        lat: USER_ANCHOR.lat,
+        lng: USER_ANCHOR.lng,
+        dismissedReportIds: dismissedIds,
+        snoozedReportIds,
+        recentVerifyCount24h: recentCount24h(activityDates),
+        recentNudges24h: getRecentNudgeCount24h(),
+      },
+      allReports,
+      user,
+      {
+        dismissedIds,
+        anchor: USER_ANCHOR,
+        nudgeContext: {
+          history: nudgeHistory,
+          snoozedUntil,
+          recentVerifyCount24h: recentCount24h(activityDates),
+        },
+      },
+    ).then(({ queue }) => {
+      if (!cancelled) setTopVerifyPick(queue[0] ?? null);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    user,
+    allReports,
+    loading,
+    dismissedIds,
+    activityDates,
+    nudgeHistory,
+    snoozedUntil,
+    getRecentNudgeCount24h,
+  ]);
 
   const impact = useMemo(
     () => computeHomeImpact(allReports, user),
@@ -147,6 +211,8 @@ export default function HomePage() {
       <NeighborhoodPulseSection reports={allReports} user={user} surface="home" />
 
       <CivicNextActionPrompt prompt={nextAction} />
+
+      {topVerifyPick ? <HomeVerifyRecommendation opportunity={topVerifyPick} /> : null}
 
       <ActionFeedbackToast feedback={feedback} />
 

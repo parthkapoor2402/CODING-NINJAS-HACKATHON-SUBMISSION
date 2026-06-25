@@ -8,23 +8,31 @@ import { VerifyHero } from '@/components/verification/VerifyHero';
 import { NeighborhoodPulseSection } from '@/components/pulse/NeighborhoodPulseSection';
 import { VerificationStreakBar } from '@/components/verification/VerificationStreakBar';
 import { VerifyOpportunityCard } from '@/components/verification/VerifyOpportunityCard';
+import { VerificationRecommendationBanner } from '@/components/verification/VerificationRecommendationBanner';
 import { LoadingState } from '@/components/states/LoadingState';
 import { EmptyState } from '@/components/states/EmptyState';
 import {
-  buildVerifyQueue,
   escalationMessage,
+  USER_ANCHOR,
   type VerifyOpportunity,
-} from '@/domain/verify-queue';
+} from '@/domain/verification-orchestrator';
 import {
   TRUST_SCORE_PER_VERIFICATION,
   VERIFICATION_SUPPORT_BONUS,
 } from '@/domain/trust-updates';
 import { ROUTES } from '@/lib/constants';
+import { recommendVerification } from '@/services/ai/verification-orchestrator-agent';
 import { services } from '@/services/registry';
 import { seedMedia } from '@/services/mock/seed';
 import { applyTrustUpdate, useAuthStore, useCurrentUser } from '@/store/authStore';
 import { useVerifyActivityStore } from '@/store/verifyActivityStore';
+import { useVerificationNudgeStore } from '@/store/verificationNudgeStore';
 import type { Report } from '@/types';
+
+function recentCount24h(dates: string[]): number {
+  const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+  return dates.filter((d) => new Date(d).getTime() >= cutoff).length;
+}
 
 export default function VerificationPage() {
   const navigate = useNavigate();
@@ -34,6 +42,7 @@ export default function VerificationPage() {
   const [feedback, setFeedback] = useState<ActionFeedback | null>(null);
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const [completedId, setCompletedId] = useState<string | null>(null);
+  const [queue, setQueue] = useState<VerifyOpportunity[]>([]);
 
   const dismissedIds = useVerifyActivityStore((s) => s.dismissedIds);
   const activityDates = useVerifyActivityStore((s) => s.activityDates);
@@ -41,6 +50,12 @@ export default function VerificationPage() {
   const dismissOpportunity = useVerifyActivityStore((s) => s.dismissOpportunity);
   const getVerificationStreak = useVerifyActivityStore((s) => s.getVerificationStreak);
   const isStreakActiveToday = useVerifyActivityStore((s) => s.isStreakActiveToday);
+
+  const nudgeHistory = useVerificationNudgeStore((s) => s.history);
+  const snoozedUntil = useVerificationNudgeStore((s) => s.snoozedUntil);
+  const recordNudgeShown = useVerificationNudgeStore((s) => s.recordNudgeShown);
+  const snoozeReport = useVerificationNudgeStore((s) => s.snoozeReport);
+  const getRecentNudgeCount24h = useVerificationNudgeStore((s) => s.getRecentNudgeCount24h);
 
   useEffect(() => {
     services.reports.list().then((data) => {
@@ -50,15 +65,64 @@ export default function VerificationPage() {
   }, []);
 
   useEffect(() => {
+    if (!user || loading) return;
+    let cancelled = false;
+
+    const snoozedReportIds = Object.entries(snoozedUntil)
+      .filter(([, until]) => new Date(until).getTime() > Date.now())
+      .map(([id]) => id);
+
+    void recommendVerification(
+      {
+        userId: user.id,
+        lat: USER_ANCHOR.lat,
+        lng: USER_ANCHOR.lng,
+        dismissedReportIds: dismissedIds,
+        snoozedReportIds,
+        recentVerifyCount24h: recentCount24h(activityDates),
+        recentNudges24h: getRecentNudgeCount24h(),
+      },
+      reports,
+      user,
+      {
+        dismissedIds,
+        anchor: USER_ANCHOR,
+        nudgeContext: {
+          history: nudgeHistory,
+          snoozedUntil,
+          recentVerifyCount24h: recentCount24h(activityDates),
+        },
+      },
+    ).then(({ queue: ranked }) => {
+      if (!cancelled) setQueue(ranked);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    user,
+    reports,
+    loading,
+    dismissedIds,
+    activityDates,
+    nudgeHistory,
+    snoozedUntil,
+    getRecentNudgeCount24h,
+  ]);
+
+  useEffect(() => {
+    if (queue[0]) recordNudgeShown(queue[0].report.id);
+  }, [queue, recordNudgeShown]);
+
+  useEffect(() => {
     if (!feedback) return;
     const t = window.setTimeout(() => setFeedback(null), 5000);
     return () => window.clearTimeout(t);
   }, [feedback]);
 
-  const queue = useMemo(
-    () => buildVerifyQueue(reports, user, dismissedIds),
-    [reports, user, dismissedIds],
-  );
+  const topOpportunity = queue[0];
+  const restQueue = useMemo(() => queue.slice(1), [queue]);
 
   const streak = getVerificationStreak();
   const activeToday = isStreakActiveToday();
@@ -156,6 +220,13 @@ export default function VerificationPage() {
     <CitizenPageShell className="motion-stagger space-y-4" data-testid="community-verify-page" stagger>
       <VerifyHero opportunityCount={queue.length} />
 
+      {topOpportunity ? (
+        <VerificationRecommendationBanner
+          opportunity={topOpportunity}
+          onSnooze={() => snoozeReport(topOpportunity.report.id)}
+        />
+      ) : null}
+
       <NeighborhoodPulseSection
         reports={reports}
         user={user}
@@ -184,7 +255,7 @@ export default function VerificationPage() {
         />
       ) : (
         <div className="space-y-4" data-testid="verify-opportunity-queue">
-          {queue.map((opportunity) => {
+          {(topOpportunity ? [topOpportunity, ...restQueue] : restQueue).map((opportunity) => {
             const media = seedMedia.find((m) => m.reportId === opportunity.report.id);
             return (
               <VerifyOpportunityCard

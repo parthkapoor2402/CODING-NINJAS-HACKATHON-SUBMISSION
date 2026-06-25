@@ -37,7 +37,7 @@ export function VerifyOpportunityCard({
   onNotEnoughEvidence,
   onPossiblyDuplicate,
 }: VerifyOpportunityCardProps) {
-  const { report, distanceKm, confirmationsNeeded, unlocksEscalation, daysOpen, socialProofLabel } =
+  const { report, distanceKm, confirmationsNeeded, unlocksEscalation, daysOpen, socialProofLabel, nearYouLabel, confirmationsLabel, impactMessage } =
     opportunity;
   const catColor = categoryColors[report.category] ?? categoryColors.other;
 
@@ -104,7 +104,16 @@ export function VerifyOpportunityCard({
       </div>
 
       <div className="space-y-3 p-4">
+        <div className="flex flex-wrap items-center gap-2 text-xs">
+          <span className="rounded-full bg-civic-teal-100 px-2 py-0.5 font-semibold text-civic-teal-800">
+            {nearYouLabel}
+          </span>
+          <span className="rounded-full bg-muted px-2 py-0.5 font-medium text-muted-foreground">
+            {confirmationsLabel}
+          </span>
+        </div>
         <p className="line-clamp-2 text-sm font-medium leading-snug">{report.description}</p>
+        <p className="text-xs text-civic-teal-800/90">{impactMessage}</p>
 
         <div className="flex flex-wrap items-center gap-2">
           <StatusBadge status={report.status} />
