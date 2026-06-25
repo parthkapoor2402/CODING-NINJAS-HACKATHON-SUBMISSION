@@ -2,8 +2,12 @@ import { useEffect, useState } from 'react';
 import { MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MapPreviewCard } from '@/components/cards/MapPreviewCard';
-import { checkDuplicateRisk, isHighDuplicateRisk } from '@/domain/duplicate-detection';
+import { duplicateTrustFromDraft } from '@/domain/duplicate-trust-local';
 import { DEFAULT_PIN, getGeolocationAdapter } from '@/lib/geolocation';
+import {
+  analyzeDuplicateTrust,
+  duplicateTrustToDraftUpdates,
+} from '@/services/ai/duplicate-trust-agent';
 import { useReportDraftStore } from '@/store/reportDraftStore';
 
 export function LocationStep() {
@@ -11,6 +15,9 @@ export function LocationStep() {
   const category = useReportDraftStore((s) => s.draft.category);
   const description = useReportDraftStore((s) => s.draft.description);
   const title = useReportDraftStore((s) => s.draft.title);
+  const mediaAttachments = useReportDraftStore((s) => s.draft.mediaAttachments);
+  const textOnlyFallback = useReportDraftStore((s) => s.draft.textOnlyFallback);
+  const severity = useReportDraftStore((s) => s.draft.severity);
   const updateDraft = useReportDraftStore((s) => s.updateDraft);
   const setDuplicateWarning = useReportDraftStore((s) => s.setDuplicateWarning);
   const setStep = useReportDraftStore((s) => s.setStep);
@@ -44,25 +51,34 @@ export function LocationStep() {
 
   useEffect(() => {
     if (!location || !category) return;
-    const fullDescription = `${title} ${description}`.trim();
-    void checkDuplicateRisk({
-      description: fullDescription,
+    const payload = duplicateTrustFromDraft({
+      title,
+      description,
       category,
-      lat: location.lat,
-      lng: location.lng,
-    })
-      .then((risk) => {
-        if (isHighDuplicateRisk(risk) && risk.matches[0]) {
-          setDuplicateWarning({
-            reportId: risk.matches[0].reportId,
-            score: risk.riskScore,
-          });
-        } else {
-          setDuplicateWarning(undefined);
-        }
+      severity,
+      location,
+      mediaAttachments,
+      mediaIds: [],
+      step: 2,
+      aiStatus: 'idle',
+      textOnlyFallback,
+    });
+    void analyzeDuplicateTrust(payload)
+      .then((result) => {
+        const updates = duplicateTrustToDraftUpdates(result);
+        setDuplicateWarning(updates.duplicateWarning);
       })
       .catch(() => setDuplicateWarning(undefined));
-  }, [location, category, description, title, setDuplicateWarning]);
+  }, [
+    location,
+    category,
+    description,
+    title,
+    mediaAttachments,
+    textOnlyFallback,
+    severity,
+    setDuplicateWarning,
+  ]);
 
   const adjustPin = (field: 'lat' | 'lng', value: string) => {
     const num = parseFloat(value);

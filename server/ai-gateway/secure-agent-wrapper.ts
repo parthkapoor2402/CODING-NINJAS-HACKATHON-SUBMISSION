@@ -15,6 +15,11 @@ import {
 } from './grok-handlers.ts';
 import { grokAnalyzeIntake, heuristicAnalyzeIntake } from './report-intake.ts';
 import {
+  grokDuplicateTrustAnalyze,
+  heuristicDuplicateTrustAnalyze,
+} from './duplicate-trust.ts';
+import { heuristicVerificationOrchestrate } from './verification-orchestrator.ts';
+import {
   mockCategorize,
   mockDetectDuplicateRisk,
   mockEstimateSeverity,
@@ -136,27 +141,132 @@ async function dispatchAction(
     }
   }
 
-  if (agent === 'duplicate_trust' && action === 'detect_risk') {
-    const lat = Number(payload.lat);
-    const lng = Number(payload.lng);
-    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
-      throw new AgentGatewayError('lat/lng required', 'INVALID_LOCATION');
+  if (agent === 'duplicate_trust') {
+    if (action === 'analyze') {
+      const lat = Number(payload.lat);
+      const lng = Number(payload.lng);
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+        throw new AgentGatewayError('lat/lng required', 'INVALID_LOCATION');
+      }
+      const trustPayload = {
+        description: String(payload.description ?? ''),
+        title: typeof payload.title === 'string' ? payload.title : undefined,
+        category: String(payload.category ?? 'other'),
+        lat,
+        lng,
+        reporterId: typeof payload.reporterId === 'string' ? payload.reporterId : undefined,
+        mediaFingerprints: Array.isArray(payload.mediaFingerprints)
+          ? payload.mediaFingerprints
+          : undefined,
+        lowQualityEvidence: Boolean(payload.lowQualityEvidence),
+        textOnlyFallback: Boolean(payload.textOnlyFallback),
+        reportsToday: Number(payload.reportsToday) || 0,
+        duplicateAttemptsToday: Number(payload.duplicateAttemptsToday) || 0,
+      };
+      return executeWithFallback(
+        () => grokDuplicateTrustAnalyze(trustPayload),
+        () => heuristicDuplicateTrustAnalyze(trustPayload),
+      );
     }
-    return executeWithFallback(
-      () =>
-        grokDetectDuplicateRisk({
-          description,
-          category,
-          lat,
-          lng,
-        }),
-      () =>
-        mockDetectDuplicateRisk({
-          description,
-          category,
-          lat,
-          lng,
-        }),
+
+    if (action === 'detect_risk') {
+      const lat = Number(payload.lat);
+      const lng = Number(payload.lng);
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+        throw new AgentGatewayError('lat/lng required', 'INVALID_LOCATION');
+      }
+      return executeWithFallback(
+        () =>
+          grokDetectDuplicateRisk({
+            description,
+            category,
+            lat,
+            lng,
+          }),
+        () =>
+          mockDetectDuplicateRisk({
+            description,
+            category,
+            lat,
+            lng,
+          }),
+      );
+    }
+
+    throw new AgentGatewayError(`Unknown duplicate_trust action: ${action}`, 'UNKNOWN_ACTION');
+  }
+
+  if (agent === 'verification_orchestrator') {
+    if (action === 'recommend') {
+      const userId = String(payload.userId ?? '');
+      if (!userId.trim()) {
+        throw new AgentGatewayError('userId required', 'INVALID_USER');
+      }
+      return executeWithFallback(
+        () =>
+          heuristicVerificationOrchestrate('recommend', {
+            userId,
+            wardId: typeof payload.wardId === 'string' ? payload.wardId : undefined,
+            lat: Number(payload.lat) || undefined,
+            lng: Number(payload.lng) || undefined,
+            dismissedReportIds: Array.isArray(payload.dismissedReportIds)
+              ? payload.dismissedReportIds.map(String)
+              : undefined,
+            snoozedReportIds: Array.isArray(payload.snoozedReportIds)
+              ? payload.snoozedReportIds.map(String)
+              : undefined,
+            recentVerifyCount24h: Number(payload.recentVerifyCount24h) || 0,
+            recentNudges24h: Number(payload.recentNudges24h) || 0,
+            supportedReportIds: Array.isArray(payload.supportedReportIds)
+              ? payload.supportedReportIds.map(String)
+              : undefined,
+          }),
+        () =>
+          heuristicVerificationOrchestrate('recommend', {
+            userId,
+            wardId: typeof payload.wardId === 'string' ? payload.wardId : undefined,
+            lat: Number(payload.lat) || undefined,
+            lng: Number(payload.lng) || undefined,
+            dismissedReportIds: Array.isArray(payload.dismissedReportIds)
+              ? payload.dismissedReportIds.map(String)
+              : undefined,
+            snoozedReportIds: Array.isArray(payload.snoozedReportIds)
+              ? payload.snoozedReportIds.map(String)
+              : undefined,
+            recentVerifyCount24h: Number(payload.recentVerifyCount24h) || 0,
+            recentNudges24h: Number(payload.recentNudges24h) || 0,
+            supportedReportIds: Array.isArray(payload.supportedReportIds)
+              ? payload.supportedReportIds.map(String)
+              : undefined,
+          }),
+      );
+    }
+
+    if (action === 'plan') {
+      const reportId = String(payload.reportId ?? '');
+      const wardId = String(payload.wardId ?? '');
+      if (!reportId.trim() || !wardId.trim()) {
+        throw new AgentGatewayError('reportId and wardId required', 'INVALID_PAYLOAD');
+      }
+      return executeWithFallback(
+        () =>
+          heuristicVerificationOrchestrate('plan', {
+            reportId,
+            wardId,
+            threshold: Number(payload.threshold) || undefined,
+          }),
+        () =>
+          heuristicVerificationOrchestrate('plan', {
+            reportId,
+            wardId,
+            threshold: Number(payload.threshold) || undefined,
+          }),
+      );
+    }
+
+    throw new AgentGatewayError(
+      `Unknown verification_orchestrator action: ${action}`,
+      'UNKNOWN_ACTION',
     );
   }
 

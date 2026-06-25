@@ -57,6 +57,7 @@ export interface ReportDraft {
   aiSuggestion?: { category?: IssueCategory; severity?: Severity };
   aiSuggestions?: AISuggestions;
   reportIntake?: ReportIntakeMetadata;
+  duplicateTrust?: import('@/types/duplicate-trust').DuplicateTrustMetadata;
   suspiciousFlag?: SuspiciousFlag;
   textOnlyFallback?: boolean;
   rewardEligible?: boolean;

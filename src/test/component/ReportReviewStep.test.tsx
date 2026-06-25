@@ -1,11 +1,12 @@
 import type { ReactElement } from 'react';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { ReviewStep } from '@/features/reporting/steps/ReviewStep';
 import { SuccessStep } from '@/features/reporting/steps/SuccessStep';
 import { clearReportDraft } from '@/lib/report-draft-persistence';
 import { resetMockAuthSession } from '@/services/mock/mockAuth';
+import * as duplicateTrustAgent from '@/services/ai/duplicate-trust-agent';
 import { useAuthStore } from '@/store/authStore';
 import { useReportDraftStore } from '@/store/reportDraftStore';
 
@@ -41,13 +42,38 @@ describe('ReportReviewStep', () => {
     useReportDraftStore.getState().resetDraft();
     useAuthStore.setState({ session: null, isLoading: false, error: null });
     await useAuthStore.getState().signInAsGuest();
+    vi.restoreAllMocks();
   });
 
   it('C38: duplicate warning banner', async () => {
     seedCompleteDraft();
-    useReportDraftStore.getState().setDuplicateWarning({ reportId: 'report-001', score: 85 });
+    vi.spyOn(duplicateTrustAgent, 'analyzeDuplicateTrust').mockResolvedValue({
+      classification: 'high_confidence_duplicate',
+      recommendedAction: 'support_existing',
+      riskScore: 85,
+      matches: [
+        {
+          reportId: 'report-001',
+          title: 'Pothole at school crossing',
+          score: 85,
+          distanceM: 45,
+          category: 'pothole',
+          status: 'verified',
+        },
+      ],
+      trustSignals: [],
+      userMessage: 'A similar report is already open nearby.',
+      adminRationale: ['Classification: high confidence duplicate'],
+      rewardEligibility: 'reduced',
+      supportExistingReportId: 'report-001',
+      model: 'mock-rules',
+      fallbackUsed: false,
+      analyzedAt: new Date().toISOString(),
+    });
     renderReview(<ReviewStep />);
-    expect(screen.getByTestId('duplicate-warning')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByTestId('duplicate-warning')).toBeInTheDocument();
+    });
   });
 
   it('C39: low-quality upload warning', () => {

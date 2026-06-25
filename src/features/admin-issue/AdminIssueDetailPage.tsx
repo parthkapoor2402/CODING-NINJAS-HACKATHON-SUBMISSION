@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { AdminPageShell } from '@/components/layout/PageShell';
 import { DuplicateClusterBanner } from '@/components/admin/DuplicateClusterBanner';
+import { DuplicateTrustRationalePanel } from '@/components/admin/DuplicateTrustRationalePanel';
 import { FieldWorkerTimeline } from '@/components/admin/FieldWorkerTimeline';
 import { IssueModerationPanel } from '@/components/admin/IssueModerationPanel';
 import { IssueTimeline } from '@/components/issues/IssueTimeline';
@@ -113,6 +114,7 @@ export default function AdminIssueDetailPage() {
         </div>
 
         <IssueModerationPanel report={report} onReportChange={setReport} />
+        <DuplicateTrustRationalePanel report={report} />
       </div>
     </AdminPageShell>
   );

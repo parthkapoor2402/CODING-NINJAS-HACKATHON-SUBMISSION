@@ -35,19 +35,44 @@ export async function submitReportDraft(): Promise<string> {
     severity: draft.severity,
     location: draft.location,
     mediaIds,
-    aiMetadata: draft.reportIntake
-      ? {
-          intake: {
-            auditId: draft.reportIntake.auditId,
-            model: draft.reportIntake.model,
-            fallbackUsed: draft.reportIntake.fallbackUsed,
-            analyzedAt: draft.reportIntake.analyzedAt,
-            confidence: draft.reportIntake.confidence,
-            safetyCues: draft.reportIntake.safetyCues,
-            explanation: draft.reportIntake.explanation,
-          },
-        }
-      : undefined,
+    aiMetadata:
+      draft.reportIntake || draft.duplicateTrust
+        ? {
+            ...(draft.reportIntake
+              ? {
+                  intake: {
+                    auditId: draft.reportIntake.auditId,
+                    model: draft.reportIntake.model,
+                    fallbackUsed: draft.reportIntake.fallbackUsed,
+                    analyzedAt: draft.reportIntake.analyzedAt,
+                    confidence: draft.reportIntake.confidence,
+                    safetyCues: draft.reportIntake.safetyCues,
+                    explanation: draft.reportIntake.explanation,
+                  },
+                }
+              : {}),
+            ...(draft.duplicateTrust
+              ? {
+                  duplicateTrust: {
+                    auditId: draft.duplicateTrust.auditId,
+                    model: draft.duplicateTrust.model,
+                    fallbackUsed: draft.duplicateTrust.fallbackUsed,
+                    analyzedAt: draft.duplicateTrust.analyzedAt,
+                    classification: draft.duplicateTrust.classification,
+                    recommendedAction: draft.duplicateTrust.recommendedAction,
+                    riskScore: draft.duplicateTrust.riskScore,
+                    trustSignals: draft.duplicateTrust.trustSignals,
+                    userMessage: draft.duplicateTrust.userMessage,
+                    adminRationale: draft.duplicateTrust.adminRationale,
+                    comparisonNarrative: draft.duplicateTrust.comparisonNarrative,
+                    rewardEligibility: draft.duplicateTrust.rewardEligibility,
+                    supportExistingReportId: draft.duplicateTrust.supportExistingReportId,
+                    matches: draft.duplicateTrust.matches,
+                  },
+                }
+              : {}),
+          }
+        : undefined,
   });
 
   useReportDraftStore.getState().setSubmitted(report.id);

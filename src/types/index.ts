@@ -99,6 +99,29 @@ export interface ReportAiMetadata {
     safetyCues: string[];
     explanation: string;
   };
+  duplicateTrust?: {
+    auditId?: string;
+    model: string;
+    fallbackUsed: boolean;
+    analyzedAt: string;
+    classification: string;
+    recommendedAction: string;
+    riskScore: number;
+    trustSignals: string[];
+    userMessage: string;
+    adminRationale: string[];
+    comparisonNarrative?: string;
+    rewardEligibility: string;
+    supportExistingReportId?: string;
+    matches: {
+      reportId: string;
+      title: string;
+      score: number;
+      distanceM: number;
+      category: string;
+      status: string;
+    }[];
+  };
 }
 
 export type IssueUpdateKind = 'system' | 'community' | 'crew' | 'moderation';
