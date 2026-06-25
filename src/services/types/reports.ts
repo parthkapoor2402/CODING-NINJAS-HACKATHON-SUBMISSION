@@ -1,4 +1,4 @@
-import type { GeoLocation, IssueCategory, Report, ReportStatus, Severity } from '@/types';
+import type { GeoLocation, IssueCategory, Report, ReportAiMetadata, ReportStatus, Severity } from '@/types';
 import type { CorroborationResult } from '@/services/mock/mockCorroboration';
 
 export interface CreateReportInput {
@@ -8,6 +8,7 @@ export interface CreateReportInput {
   severity: Severity;
   location: GeoLocation;
   mediaIds?: string[];
+  aiMetadata?: ReportAiMetadata;
 }
 
 export interface ReportRepository {

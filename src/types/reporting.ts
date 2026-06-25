@@ -1,5 +1,6 @@
 import type { IssueCategory, Severity } from '@/types';
 import type { GeoLocation } from '@/types';
+import type { ReportIntakeMetadata } from '@/types/report-intake';
 
 export const REPORT_DRAFT_STORAGE_KEY = 'civic-report-draft-v1';
 
@@ -23,6 +24,9 @@ export interface AISuggestions {
   severityRationale?: string;
   summary?: string;
   suggestedTitle?: string;
+  safetyCues?: string[];
+  explanation?: string;
+  intakeMetadata?: ReportIntakeMetadata;
 }
 
 export interface SuspiciousFlag {
@@ -52,6 +56,7 @@ export interface ReportDraft {
   aiStatus: AIStatus;
   aiSuggestion?: { category?: IssueCategory; severity?: Severity };
   aiSuggestions?: AISuggestions;
+  reportIntake?: ReportIntakeMetadata;
   suspiciousFlag?: SuspiciousFlag;
   textOnlyFallback?: boolean;
   rewardEligible?: boolean;

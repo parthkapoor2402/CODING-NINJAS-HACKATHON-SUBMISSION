@@ -1,4 +1,5 @@
-import { Sparkles } from 'lucide-react';
+import { ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { validateDescription, validateTitle } from '@/lib/report-validation';
 import { useReportAIAssist } from '@/features/reporting/useReportAIAssist';
@@ -7,27 +8,46 @@ import { useReportDraftStore } from '@/store/reportDraftStore';
 import type { Severity } from '@/types';
 import { cn } from '@/lib/utils';
 
+function confidenceLabel(value?: number): string {
+  if (value == null) return '';
+  const pct = Math.round(value * 100);
+  if (pct >= 75) return 'High confidence';
+  if (pct >= 50) return 'Moderate confidence';
+  return 'Low confidence — please confirm';
+}
+
 export function DetailsStep() {
   const draft = useReportDraftStore((s) => s.draft);
   const updateDraft = useReportDraftStore((s) => s.updateDraft);
   const setStep = useReportDraftStore((s) => s.setStep);
+  const [showWhy, setShowWhy] = useState(true);
 
   useReportAIAssist();
 
   const titleError = draft.title ? validateTitle(draft.title) : null;
   const descriptionError = draft.description ? validateDescription(draft.description) : null;
   const suggestions = draft.aiSuggestions;
+  const intake = draft.reportIntake;
+  const suggestedCategory = suggestions?.category;
 
   const canContinue =
     draft.category != null &&
     validateTitle(draft.title) === null &&
     validateDescription(draft.description) === null;
 
-  const applyAISuggestions = () => {
+  const applyCategory = () => {
+    if (!suggestions?.category) return;
+    updateDraft({ category: suggestions.category });
+  };
+
+  const applySeverity = () => {
+    if (!suggestions?.severity) return;
+    updateDraft({ severity: suggestions.severity });
+  };
+
+  const applyTitleAndSummary = () => {
     if (!suggestions) return;
     updateDraft({
-      category: suggestions.category ?? draft.category,
-      severity: suggestions.severity ?? draft.severity,
       title: suggestions.suggestedTitle ?? draft.title,
       description: suggestions.summary ?? draft.description,
     });
@@ -40,7 +60,7 @@ export function DetailsStep() {
           className="rounded-xl border border-dashed border-civic-blue-200 bg-civic-blue-50/50 p-3 text-sm text-civic-blue-800"
           data-testid="ai-suggestion-placeholder"
         >
-          Analyzing your description for category hints…
+          Analyzing your report for category, severity, and safety cues…
         </div>
       ) : null}
 
@@ -50,9 +70,9 @@ export function DetailsStep() {
           data-testid="ai-unavailable-fallback"
           role="status"
         >
-          <p className="font-medium text-amber-900">AI suggestions unavailable</p>
+          <p className="font-medium text-amber-900">Suggestions unavailable</p>
           <p className="mt-1 text-xs text-amber-900/80">
-            Select a category manually — reporting still works.
+            Fill in the fields below manually — reporting still works.
           </p>
         </div>
       ) : null}
@@ -64,38 +84,100 @@ export function DetailsStep() {
         >
           <div className="flex items-start gap-2">
             <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-civic-teal-600" />
-            <div className="min-w-0 flex-1">
-              <p className="font-medium text-civic-teal-900">AI suggestions</p>
-              {suggestions.category ? (
-                <p className="mt-1 text-xs text-civic-teal-800">
-                  Category: <strong>{suggestions.category.replace('_', ' ')}</strong>
-                  {suggestions.categoryConfidence
-                    ? ` (${Math.round(suggestions.categoryConfidence * 100)}% confidence)`
-                    : ''}
+            <div className="min-w-0 flex-1 space-y-2">
+              <div>
+                <p className="font-medium text-civic-teal-900">Report intake suggestions</p>
+                <p className="text-xs text-civic-teal-800/80">
+                  Editable — nothing is submitted until you tap Submit on the review step.
                 </p>
+              </div>
+
+              {suggestedCategory ? (
+                <div data-testid="ai-suggested-category">
+                  <p className="text-xs font-semibold text-civic-teal-900">AI suggested category</p>
+                  <p className="text-sm capitalize text-civic-teal-900">
+                    {suggestedCategory.replace('_', ' ')}
+                    <span className="ml-1 text-xs font-normal text-civic-teal-700">
+                      ({confidenceLabel(suggestions.categoryConfidence)})
+                    </span>
+                  </p>
+                  <Button variant="soft" size="sm" className="mt-1 h-8" onClick={applyCategory}>
+                    Use this category
+                  </Button>
+                </div>
               ) : null}
+
               {suggestions.severity ? (
-                <p className="text-xs text-civic-teal-800">
-                  Severity: <strong className="capitalize">{suggestions.severity}</strong>
-                  {suggestions.severityRationale ? ` — ${suggestions.severityRationale}` : ''}
-                </p>
+                <div data-testid="ai-suggested-severity">
+                  <p className="text-xs font-semibold text-civic-teal-900">Suggested severity</p>
+                  <p className="text-sm capitalize text-civic-teal-900">
+                    {suggestions.severity}
+                    <span className="ml-1 text-xs font-normal text-civic-teal-700">
+                      ({confidenceLabel(suggestions.severityConfidence)})
+                    </span>
+                  </p>
+                  <Button variant="soft" size="sm" className="mt-1 h-8" onClick={applySeverity}>
+                    Use this severity
+                  </Button>
+                </div>
               ) : null}
-              {suggestions.summary ? (
-                <p className="mt-1 text-xs leading-relaxed text-civic-teal-800/90">
-                  {suggestions.summary}
+
+              {suggestions.safetyCues && suggestions.safetyCues.length > 0 ? (
+                <div data-testid="ai-safety-cues">
+                  <p className="text-xs font-semibold text-civic-teal-900">Safety cues noted</p>
+                  <div className="mt-1 flex flex-wrap gap-1">
+                    {suggestions.safetyCues.map((cue) => (
+                      <span
+                        key={cue}
+                        className="rounded-full bg-civic-amber-100 px-2 py-0.5 text-[10px] font-medium text-civic-amber-900"
+                      >
+                        {cue}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+
+              {suggestions.explanation ? (
+                <div data-testid="ai-why-suggested">
+                  <button
+                    type="button"
+                    className="flex w-full items-center justify-between text-left text-xs font-semibold text-civic-teal-900"
+                    onClick={() => setShowWhy((v) => !v)}
+                  >
+                    Why this was suggested
+                    {showWhy ? (
+                      <ChevronUp className="h-3.5 w-3.5" />
+                    ) : (
+                      <ChevronDown className="h-3.5 w-3.5" />
+                    )}
+                  </button>
+                  {showWhy ? (
+                    <p className="mt-1 text-xs leading-relaxed text-civic-teal-800/90">
+                      {suggestions.explanation}
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
+
+              {intake?.fallbackUsed ? (
+                <p className="text-[10px] text-civic-teal-700/80" data-testid="ai-fallback-notice">
+                  Used offline rules — live AI was unavailable.
                 </p>
               ) : null}
             </div>
           </div>
-          <Button variant="soft" size="sm" className="mt-2" onClick={applyAISuggestions}>
-            Apply suggestions
-          </Button>
+          {suggestions.suggestedTitle || suggestions.summary ? (
+            <Button variant="outline" size="sm" className="mt-2 w-full" onClick={applyTitleAndSummary}>
+              Apply suggested title & summary
+            </Button>
+          ) : null}
         </div>
       ) : null}
 
       <div>
         <label className="text-sm font-medium" htmlFor="report-title">
-          Title
+          Title <span className="font-normal text-muted-foreground">(editable)</span>
         </label>
         <input
           id="report-title"
@@ -110,7 +192,7 @@ export function DetailsStep() {
 
       <div>
         <label className="text-sm font-medium" htmlFor="report-description">
-          Description
+          Description <span className="font-normal text-muted-foreground">(editable)</span>
         </label>
         <textarea
           id="report-description"
@@ -126,7 +208,9 @@ export function DetailsStep() {
       </div>
 
       <div>
-        <p className="text-sm font-medium">Category</p>
+        <p className="text-sm font-medium">
+          Category <span className="font-normal text-muted-foreground">(tap to edit)</span>
+        </p>
         <div className="mt-2 flex flex-wrap gap-2">
           {ISSUE_CATEGORIES.map((cat) => (
             <button
@@ -142,13 +226,18 @@ export function DetailsStep() {
               )}
             >
               {cat.label}
+              {suggestedCategory === cat.id && draft.aiStatus === 'suggestion' ? (
+                <span className="ml-1 text-[10px] text-civic-teal-700">· suggested</span>
+              ) : null}
             </button>
           ))}
         </div>
       </div>
 
       <div>
-        <p className="text-sm font-medium">Severity</p>
+        <p className="text-sm font-medium">
+          Severity <span className="font-normal text-muted-foreground">(tap to edit)</span>
+        </p>
         <div className="mt-2 flex gap-2">
           {(['low', 'medium', 'high'] as Severity[]).map((level) => (
             <button

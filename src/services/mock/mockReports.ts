@@ -73,6 +73,7 @@ export const mockReportRepository: ReportRepository = {
       corroborationCount: 0,
       createdAt: now,
       updatedAt: now,
+      aiMetadata: input.aiMetadata,
     };
     reports.push(report);
     return report;

@@ -14,7 +14,7 @@ import {
 import { setGeolocationAdapter, resetGeolocationAdapter } from '@/lib/geolocation';
 import * as videoMetadata from '@/lib/video-metadata';
 import { useReportDraftStore } from '@/store/reportDraftStore';
-import { services } from '@/services/registry';
+import * as reportIntakeAgent from '@/services/ai/report-intake-agent';
 
 describe('Integration: report media and fallbacks', () => {
   beforeEach(async () => {
@@ -171,7 +171,7 @@ describe('Integration: report media and fallbacks', () => {
   });
 
   it('I16b: AI unavailable graceful fallback', async () => {
-    vi.spyOn(services.ai, 'categorize').mockRejectedValue(new Error('offline'));
+    vi.spyOn(reportIntakeAgent, 'analyzeReportIntake').mockRejectedValue(new Error('offline'));
     await openReportFlow();
     fireEvent.change(screen.getByTestId('report-gallery-image-input'), {
       target: { files: [mockFile('image/jpeg', 50_000, 'proof.jpg')] },

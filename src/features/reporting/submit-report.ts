@@ -35,6 +35,19 @@ export async function submitReportDraft(): Promise<string> {
     severity: draft.severity,
     location: draft.location,
     mediaIds,
+    aiMetadata: draft.reportIntake
+      ? {
+          intake: {
+            auditId: draft.reportIntake.auditId,
+            model: draft.reportIntake.model,
+            fallbackUsed: draft.reportIntake.fallbackUsed,
+            analyzedAt: draft.reportIntake.analyzedAt,
+            confidence: draft.reportIntake.confidence,
+            safetyCues: draft.reportIntake.safetyCues,
+            explanation: draft.reportIntake.explanation,
+          },
+        }
+      : undefined,
   });
 
   useReportDraftStore.getState().setSubmitted(report.id);

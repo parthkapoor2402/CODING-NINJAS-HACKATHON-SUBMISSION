@@ -1,12 +1,11 @@
 import { useEffect, useRef } from 'react';
 import { fileToDataUrl } from '@/services/ai/grok-client';
 import { isAiGatewayEnabled } from '@/services/ai/gateway-config';
-import { gatewayGenerateReportCopy } from '@/services/ai/gatewayAIService';
-import { services } from '@/services/registry';
+import { analyzeReportIntake, intakeToSuggestions } from '@/services/ai/report-intake-agent';
 import { getMediaFile } from '@/store/reportMediaFiles';
 import { useReportDraftStore } from '@/store/reportDraftStore';
 
-/** Runs AI assist when description is long enough; never blocks manual edits. */
+/** Runs Report Intake Agent when description is long enough; never blocks manual edits. */
 export function useReportAIAssist() {
   const draft = useReportDraftStore((s) => s.draft);
   const updateDraft = useReportDraftStore((s) => s.updateDraft);
@@ -21,6 +20,7 @@ export function useReportAIAssist() {
 
     const run = async () => {
       const firstPhoto = draft.mediaAttachments.find((a) => a.type === 'photo');
+      const hasVideo = draft.mediaAttachments.some((a) => a.type === 'video');
       let imageUrl: string | undefined = firstPhoto?.previewUrl;
       const file = firstPhoto ? getMediaFile(firstPhoto.id) : undefined;
       if (file && isAiGatewayEnabled()) {
@@ -31,59 +31,31 @@ export function useReportAIAssist() {
         }
       }
 
-      const input = {
-        description: draft.description,
-        categoryHint: draft.category,
-        imageUrl,
-        location: draft.location
-          ? { lat: draft.location.lat, lng: draft.location.lng }
-          : undefined,
-      };
-
       try {
-        const [categoryResult, severityResult] = await Promise.all([
-          services.ai.categorize(input),
-          services.ai.estimateSeverity(input),
-        ]);
-
-        let summary = draft.aiSuggestions?.summary;
-        let suggestedTitle = draft.aiSuggestions?.suggestedTitle;
-
-        if (isAiGatewayEnabled()) {
-          try {
-            const copy = await gatewayGenerateReportCopy(
-              draft.description,
-              categoryResult.category,
-              imageUrl,
-            );
-            summary = copy.summary;
-            suggestedTitle = copy.title;
-          } catch {
-            summary = await services.ai.summarize(draft.description);
-          }
-        } else {
-          summary = await services.ai.summarize(draft.description);
-        }
+        const intake = await analyzeReportIntake({
+          description: draft.description,
+          categoryHint: draft.category,
+          imageUrl,
+          hasVideo,
+          location: draft.location
+            ? { lat: draft.location.lat, lng: draft.location.lng }
+            : undefined,
+        });
 
         if (currentRun !== runId.current) return;
+
+        const suggestions = intakeToSuggestions(intake);
 
         updateDraft({
           aiStatus: 'suggestion',
           aiSuggestion: {
-            category: categoryResult.category,
-            severity: severityResult.severity,
+            category: intake.category,
+            severity: intake.severity,
           },
-          aiSuggestions: {
-            category: categoryResult.category,
-            categoryConfidence: categoryResult.confidence,
-            severity: severityResult.severity,
-            severityConfidence: severityResult.confidence,
-            severityRationale: severityResult.rationale,
-            summary,
-            suggestedTitle,
-          },
-          ...(draft.category ? {} : { category: categoryResult.category }),
-          ...(draft.title.trim() ? {} : { title: suggestedTitle ?? draft.title }),
+          aiSuggestions: suggestions,
+          reportIntake: intake,
+          ...(draft.category ? {} : { category: intake.category }),
+          ...(draft.title.trim() ? {} : { title: intake.suggestedTitle }),
         });
       } catch {
         if (currentRun !== runId.current) return;

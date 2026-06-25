@@ -127,6 +127,72 @@ export function validateSummarizeOutput(
   return fallback.slice(0, 500);
 }
 
+export function validateReportIntakeOutput(
+  parsed: Record<string, unknown>,
+  fallbackDescription: string,
+): {
+  category: CivicCategory;
+  severity: CivicSeverity;
+  suggestedTitle: string;
+  summary: string;
+  safetyCues: string[];
+  confidence: { category: number; severity: number; overall: number };
+  explanation: string;
+  categoryRationale?: string;
+  severityRationale?: string;
+} {
+  const category = asCategory(parsed.category);
+  const severity = asSeverity(parsed.severity);
+  const categoryConfidence = clamp01(parsed.categoryConfidence ?? parsed.confidence, 0.55);
+  const severityConfidence = clamp01(parsed.severityConfidence ?? parsed.confidence, 0.6);
+  const overall = Math.round(((categoryConfidence + severityConfidence) / 2) * 100) / 100;
+
+  const suggestedTitle =
+    typeof parsed.suggestedTitle === 'string' && parsed.suggestedTitle.trim()
+      ? parsed.suggestedTitle.trim().slice(0, 60)
+      : typeof parsed.title === 'string' && parsed.title.trim()
+        ? parsed.title.trim().slice(0, 60)
+        : fallbackDescription.slice(0, 60);
+
+  const summary =
+    typeof parsed.summary === 'string' && parsed.summary.trim()
+      ? parsed.summary.trim().slice(0, 500)
+      : fallbackDescription.slice(0, 500);
+
+  const safetyCuesRaw = Array.isArray(parsed.safetyCues) ? parsed.safetyCues : [];
+  const safetyCues = safetyCuesRaw
+    .filter((c): c is string => typeof c === 'string' && c.trim().length > 0)
+    .map((c) => c.trim().slice(0, 120))
+    .slice(0, 5);
+
+  const explanation =
+    typeof parsed.explanation === 'string' && parsed.explanation.trim()
+      ? parsed.explanation.trim().slice(0, 500)
+      : typeof parsed.categoryRationale === 'string'
+        ? parsed.categoryRationale.slice(0, 500)
+        : 'Suggestions based on your description and any safety cues.';
+
+  return {
+    category,
+    severity,
+    suggestedTitle,
+    summary,
+    safetyCues,
+    confidence: { category: categoryConfidence, severity: severityConfidence, overall },
+    explanation,
+    categoryRationale:
+      typeof parsed.categoryRationale === 'string'
+        ? parsed.categoryRationale.slice(0, 280)
+        : undefined,
+    severityRationale:
+      typeof parsed.severityRationale === 'string'
+        ? parsed.severityRationale.slice(0, 280)
+        : typeof parsed.rationale === 'string'
+          ? parsed.rationale.slice(0, 280)
+          : undefined,
+  };
+}
+
 function sanitizeId(value: unknown): string {
   return String(value ?? '')
     .replace(/[^a-zA-Z0-9_-]/g, '')

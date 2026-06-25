@@ -86,6 +86,19 @@ export interface Report {
   updatedAt: string;
   resolvedAt?: string;
   reopenedAt?: string;
+  aiMetadata?: ReportAiMetadata;
+}
+
+export interface ReportAiMetadata {
+  intake?: {
+    auditId?: string;
+    model: string;
+    fallbackUsed: boolean;
+    analyzedAt: string;
+    confidence: { category: number; severity: number; overall: number };
+    safetyCues: string[];
+    explanation: string;
+  };
 }
 
 export type IssueUpdateKind = 'system' | 'community' | 'crew' | 'moderation';

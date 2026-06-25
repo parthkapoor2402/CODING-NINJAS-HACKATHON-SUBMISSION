@@ -13,6 +13,7 @@ import {
   grokGenerateCopy,
   grokSummarize,
 } from './grok-handlers.ts';
+import { grokAnalyzeIntake, heuristicAnalyzeIntake } from './report-intake.ts';
 import {
   mockCategorize,
   mockDetectDuplicateRisk,
@@ -89,9 +90,27 @@ async function dispatchAction(
   const categoryHint = payload.categoryHint ? String(payload.categoryHint) : undefined;
   const imageUrl = typeof payload.imageUrl === 'string' ? payload.imageUrl : undefined;
   const category = String(payload.category ?? categoryHint ?? 'other');
+  const hasVideo = Boolean(payload.hasVideo);
 
   if (agent === 'report_intake') {
     switch (action) {
+      case 'analyze':
+        return executeWithFallback(
+          () =>
+            grokAnalyzeIntake({
+              description,
+              categoryHint,
+              imageUrl,
+              hasVideo,
+            }),
+          () =>
+            heuristicAnalyzeIntake({
+              description,
+              categoryHint,
+              imageUrl,
+              hasVideo,
+            }),
+        );
       case 'categorize':
         return executeWithFallback(
           () => grokCategorize({ description, categoryHint, imageUrl }),
