@@ -18,6 +18,7 @@ export function IssueModerationPanel({ report, onReportChange }: IssueModeration
   const [assigning, setAssigning] = useState(false);
   const [proof, setProof] = useState<ResolutionProof | null>(null);
   const [proofBusy, setProofBusy] = useState(false);
+  const [overrideReason, setOverrideReason] = useState('');
 
   useEffect(() => {
     let active = true;
@@ -51,8 +52,13 @@ export function IssueModerationPanel({ report, onReportChange }: IssueModeration
   }
 
   async function handleOverride() {
-    const updated = await services.backend.admin.overrideReportStatus(report.id, 'verified');
+    const updated = await services.backend.admin.overrideReportStatus(
+      report.id,
+      'verified',
+      overrideReason.trim() || undefined,
+    );
     onReportChange(updated);
+    setOverrideReason('');
   }
 
   async function handleProofReview(proofId: string, action: 'approve' | 'reject') {
@@ -122,6 +128,16 @@ export function IssueModerationPanel({ report, onReportChange }: IssueModeration
           >
             Mark for manual review
           </Button>
+          <label className="flex flex-col gap-1 text-xs font-medium text-muted-foreground">
+            Override reason
+            <textarea
+              data-testid="override-reason-input"
+              className="min-h-[52px] rounded-lg border bg-card px-3 py-2 text-sm"
+              value={overrideReason}
+              onChange={(e) => setOverrideReason(e.target.value)}
+              placeholder="Why you are overriding status…"
+            />
+          </label>
           <Button
             data-testid="override-status-btn"
             variant="soft"

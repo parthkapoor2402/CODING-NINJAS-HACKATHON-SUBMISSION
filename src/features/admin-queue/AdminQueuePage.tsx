@@ -15,8 +15,11 @@ import {
 import { ROUTES } from '@/lib/constants';
 import { categoryLabel } from '@/utils/labels';
 import { ArrowUpDown } from 'lucide-react';
+import { OpsTriageQueueSummary } from '@/components/admin/OpsTriageQueueSummary';
+import { useAuthStore } from '@/store/authStore';
 
 export default function AdminQueuePage() {
+  const adminId = useAuthStore((s) => s.session?.user.id ?? 'user-admin-1');
   const [queue, setQueue] = useState<AdminQueueItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<AdminQueueFilters>(DEFAULT_ADMIN_QUEUE_FILTERS);
@@ -97,6 +100,8 @@ export default function AdminQueuePage() {
           </select>
         </label>
       </div>
+
+      <OpsTriageQueueSummary adminId={adminId} />
 
       {loading ? (
         <LoadingState variant="cards" label="Loading queue…" />

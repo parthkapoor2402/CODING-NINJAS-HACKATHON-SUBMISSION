@@ -49,7 +49,7 @@ export const mockAdminService = {
     return seedUsers.filter((u) => u.role === 'field_worker');
   },
 
-  async assignWorker(reportId: string, workerId: string) {
+  async assignWorker(reportId: string, workerId: string, reason?: string) {
     await delay(120);
     const report = await mockReportRepository.getById(reportId);
     if (!report) throw new Error(`Report ${reportId} not found`);
@@ -57,9 +57,10 @@ export const mockAdminService = {
     Object.assign(getMockReportsSnapshot().find((r) => r.id === reportId)!, updated);
 
     const worker = getUserById(workerId);
+    const reasonSuffix = reason?.trim() ? ` — ${reason.trim()}` : '';
     await appendIssueUpdate(reportId, {
       kind: 'crew',
-      message: `Assigned to ${worker?.displayName ?? 'field crew'} — work order opened.`,
+      message: `Assigned to ${worker?.displayName ?? 'field crew'} — work order opened.${reasonSuffix}`,
       createdAt: new Date().toISOString(),
       actorLabel: 'Ward ops',
     });
@@ -115,16 +116,31 @@ export const mockAdminService = {
     return mockReportRepository.getById(canonicalId);
   },
 
-  async overrideReportStatus(reportId: string, status: 'verified' | 'rejected' | 'acknowledged') {
+  async overrideReportStatus(
+    reportId: string,
+    status: 'verified' | 'rejected' | 'acknowledged',
+    reason?: string,
+  ) {
     await delay(120);
     const updated = await mockReportRepository.updateStatus(reportId, status);
+    const reasonSuffix = reason?.trim() ? ` Reason: ${reason.trim()}` : '';
     await appendIssueUpdate(reportId, {
       kind: 'moderation',
-      message: `Admin override — status set to ${status.replace('_', ' ')}.`,
+      message: `Admin override — status set to ${status.replace('_', ' ')}.${reasonSuffix}`,
       createdAt: new Date().toISOString(),
       actorLabel: 'Ops Admin',
     });
     return updated;
+  },
+
+  async recordModerationNote(reportId: string, message: string) {
+    await delay(60);
+    await appendIssueUpdate(reportId, {
+      kind: 'moderation',
+      message,
+      createdAt: new Date().toISOString(),
+      actorLabel: 'Triage copilot',
+    });
   },
 
   async getResponseTimeMetrics() {

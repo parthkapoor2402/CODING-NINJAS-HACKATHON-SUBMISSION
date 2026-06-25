@@ -41,7 +41,7 @@ export interface BackendAdapter {
     getDashboardSnapshot(): Promise<AdminDashboardSnapshot>;
     getSuspiciousCases(): Promise<SuspiciousCase[]>;
     getFieldWorkers(): Promise<User[]>;
-    assignWorker(reportId: string, workerId: string): Promise<Report>;
+    assignWorker(reportId: string, workerId: string, reason?: string): Promise<Report>;
     reviewSuspiciousCase(caseId: string): Promise<SuspiciousCase>;
     dismissSuspiciousCase(caseId: string): Promise<SuspiciousCase>;
     resolveSuspiciousCase(caseId: string): Promise<SuspiciousCase>;
@@ -49,7 +49,9 @@ export interface BackendAdapter {
     overrideReportStatus(
       reportId: string,
       status: 'verified' | 'rejected' | 'acknowledged',
+      reason?: string,
     ): Promise<Report>;
+    recordModerationNote(reportId: string, message: string): Promise<void>;
     getResponseTimeMetrics(): Promise<ResponseTimeMetric[]>;
     getCategoryTrends(): Promise<CategoryTrend[]>;
     getRewardAbuseFlags(): Promise<RewardAbuseFlag[]>;

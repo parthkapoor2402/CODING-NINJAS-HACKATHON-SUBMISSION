@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { AdminPageShell } from '@/components/layout/PageShell';
 import { DuplicateClusterBanner } from '@/components/admin/DuplicateClusterBanner';
 import { DuplicateTrustRationalePanel } from '@/components/admin/DuplicateTrustRationalePanel';
+import { OpsTriagePanel } from '@/components/admin/OpsTriagePanel';
 import { FieldWorkerTimeline } from '@/components/admin/FieldWorkerTimeline';
 import { IssueModerationPanel } from '@/components/admin/IssueModerationPanel';
 import { IssueTimeline } from '@/components/issues/IssueTimeline';
@@ -13,9 +14,11 @@ import { services } from '@/services/registry';
 import type { FieldWorkerUpdate, IssueUpdate, Report } from '@/types';
 import { categoryLabel } from '@/utils/labels';
 import { MapPin } from 'lucide-react';
+import { useAuthStore } from '@/store/authStore';
 
 export default function AdminIssueDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const adminId = useAuthStore((s) => s.session?.user.id ?? 'user-admin-1');
   const [report, setReport] = useState<Report | null>(null);
   const [updates, setUpdates] = useState<IssueUpdate[]>([]);
   const [workerUpdates, setWorkerUpdates] = useState<FieldWorkerUpdate[]>([]);
@@ -114,6 +117,12 @@ export default function AdminIssueDetailPage() {
         </div>
 
         <IssueModerationPanel report={report} onReportChange={setReport} />
+        <OpsTriagePanel
+          report={report}
+          adminId={adminId}
+          duplicateRisk={duplicateRisk}
+          onReportChange={setReport}
+        />
         <DuplicateTrustRationalePanel report={report} />
       </div>
     </AdminPageShell>

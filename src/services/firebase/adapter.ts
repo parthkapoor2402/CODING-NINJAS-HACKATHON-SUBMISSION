@@ -27,6 +27,7 @@ export const firebaseBackendAdapter: BackendAdapter = {
     resolveSuspiciousCase: notImplemented,
     mergeDuplicateReport: notImplemented,
     overrideReportStatus: notImplemented,
+    recordModerationNote: notImplemented,
     getResponseTimeMetrics: notImplemented,
     getCategoryTrends: notImplemented,
     getRewardAbuseFlags: notImplemented,

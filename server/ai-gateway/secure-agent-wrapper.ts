@@ -18,6 +18,7 @@ import {
   grokDuplicateTrustAnalyze,
   heuristicDuplicateTrustAnalyze,
 } from './duplicate-trust.ts';
+import { heuristicOpsTriageSuggest } from './ops-triage-copilot.ts';
 import { heuristicVerificationOrchestrate } from './verification-orchestrator.ts';
 import {
   mockCategorize,
@@ -268,6 +269,27 @@ async function dispatchAction(
       `Unknown verification_orchestrator action: ${action}`,
       'UNKNOWN_ACTION',
     );
+  }
+
+  if (agent === 'ops_triage_copilot') {
+    if (action === 'suggest') {
+      const adminId = String(payload.adminId ?? '');
+      if (!adminId.trim()) {
+        throw new AgentGatewayError('adminId required', 'INVALID_ADMIN');
+      }
+      const triagePayload = {
+        adminId,
+        reportId: typeof payload.reportId === 'string' ? payload.reportId : undefined,
+        wardId: typeof payload.wardId === 'string' ? payload.wardId : undefined,
+        duplicateRisk: Number(payload.duplicateRisk) || undefined,
+        hotspotRising: Boolean(payload.hotspotRising),
+      };
+      return executeWithFallback(
+        () => heuristicOpsTriageSuggest(triagePayload),
+        () => heuristicOpsTriageSuggest(triagePayload),
+      );
+    }
+    throw new AgentGatewayError(`Unknown ops_triage_copilot action: ${action}`, 'UNKNOWN_ACTION');
   }
 
   throw new AgentGatewayError(

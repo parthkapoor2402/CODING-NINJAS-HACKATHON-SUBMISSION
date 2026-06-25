@@ -26,6 +26,7 @@ describe('AdminQueuePage', () => {
     expect(queue).toBeInTheDocument();
     await waitFor(() => {
       expect(screen.getByTestId('admin-queue-item-report-001')).toBeInTheDocument();
+      expect(screen.getByTestId('ops-triage-queue-summary')).toBeInTheDocument();
     });
   });
 

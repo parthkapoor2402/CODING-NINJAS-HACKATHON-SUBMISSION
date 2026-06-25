@@ -26,6 +26,7 @@ describe('AdminIssueDetailPage', () => {
     await useAuthStore.getState().signIn('demo-admin@local.dev');
     renderDetail('report-001');
     expect(await screen.findByTestId('issue-moderation-panel')).toBeInTheDocument();
+    expect(await screen.findByTestId('ops-triage-panel')).toBeInTheDocument();
     expect(screen.getByText(/Deep pothole/i)).toBeInTheDocument();
   });
 
@@ -49,7 +50,7 @@ describe('AdminIssueDetailPage', () => {
     fireEvent.click(reviewBtn);
     fireEvent.click(overrideBtn);
     await waitFor(() => {
-      expect(overrideSpy).toHaveBeenCalledWith('report-003', 'verified');
+      expect(overrideSpy).toHaveBeenCalledWith('report-003', 'verified', undefined);
     });
   });
 });

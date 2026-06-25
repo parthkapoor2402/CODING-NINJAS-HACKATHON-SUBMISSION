@@ -17,7 +17,8 @@
     "noUncheckedSideEffectImports": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@shared/*": ["./shared/*"]
     }
   },
   "include": ["vite.config.ts", "vitest.config.ts", "playwright.config.ts", "server/**/*.ts", "api/**/*.ts", "shared/**/*.ts"]
