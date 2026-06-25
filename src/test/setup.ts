@@ -1,5 +1,6 @@
 import '@testing-library/jest-dom/vitest';
-import { beforeEach } from 'vitest';import { resetMockAuthSession } from '@/services/mock/mockAuth';
+import { beforeEach } from 'vitest';
+import { resetMockAuthSession } from '@/services/mock/mockAuth';
 import { resetMockReports } from '@/services/mock/mockReports';
 import { resetMockCorroboration } from '@/services/mock/mockCorroboration';
 import { resetMockIssueUpdates } from '@/services/mock/mockIssueUpdates';
@@ -23,7 +24,8 @@ Object.defineProperty(window, 'matchMedia', {
   }),
 });
 
-beforeEach(() => {  resetMockReports();
+beforeEach(() => {
+  resetMockReports();
   resetMockCorroboration();
   resetMockIssueUpdates();
   resetMockRedemptions();

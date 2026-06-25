@@ -1,6 +1,6 @@
 import type { AIService } from '@/services/ai/types';
-import { grokAIService } from '@/services/ai/grokAI';
-import { hasGrokApiKey } from '@/services/ai/grok-client';
+import { isAiGatewayEnabled } from '@/services/ai/gateway-config';
+import { gatewayAIService } from '@/services/ai/gatewayAIService';
 import { mockAIService } from '@/services/ai/mockAI';
 import { createResilientAIService } from '@/services/ai/resilientAI';
 import type { MapsProvider } from '@/services/maps/types';
@@ -28,14 +28,22 @@ function resolveBackend(): BackendAdapter {
 }
 
 function resolveAI(): AIService {
-  if (hasGrokApiKey()) {
-    return createResilientAIService(grokAIService, mockAIService);
-  }
-  const provider = import.meta.env.VITE_AI_PROVIDER ?? 'mock';
-  if (provider === 'grok') {
-    return createResilientAIService(grokAIService, mockAIService);
+  if (isAiGatewayEnabled()) {
+    return createResilientAIService(gatewayAIService, mockAIService);
   }
   return mockAIService;
+}
+
+let cachedAi: AIService | undefined;
+
+function getAiService(): AIService {
+  cachedAi ??= resolveAI();
+  return cachedAi;
+}
+
+/** Test hook — re-resolve AI after env stubs change */
+export function resetAiServiceCache(): void {
+  cachedAi = undefined;
 }
 
 function resolveMaps(): MapsProvider {
@@ -51,8 +59,10 @@ export const services = {
   issueUpdates: { getForReport: getIssueUpdatesForReport },
   media: mockMediaStorage as MediaStorage,
   backend: resolveBackend(),
-  ai: resolveAI(),
+  get ai(): AIService {
+    return getAiService();
+  },
   maps: resolveMaps(),
-} as const;
+};
 
 export type Services = typeof services;

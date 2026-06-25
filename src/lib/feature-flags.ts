@@ -3,7 +3,7 @@
  * Toggle via env or hardcoded defaults for MVP demo reliability.
  */
 
-import { hasGrokApiKey } from '@/services/ai/grok-client';
+import { isAiGatewayEnabled } from '@/services/ai/gateway-config';
 
 const envBool = (key: string, fallback: boolean): boolean => {
   const value = import.meta.env[key];
@@ -15,8 +15,8 @@ export const featureFlags = {
   /** Use mock adapters for backend, AI, and maps */
   useMocks: envBool('VITE_USE_MOCKS', true),
 
-  /** Live Grok AI categorization and duplicate hints */
-  aiAssist: hasGrokApiKey() || (import.meta.env.VITE_AI_PROVIDER ?? 'mock') === 'grok',
+  /** Report assist via secure gateway (server mock or live Grok) */
+  aiAssist: isAiGatewayEnabled() || (import.meta.env.VITE_AI_PROVIDER ?? 'mock') !== 'off',
 
   /** Live map provider (Mapbox/Google) */
   liveMaps: import.meta.env.VITE_MAPS_PROVIDER !== 'mock',

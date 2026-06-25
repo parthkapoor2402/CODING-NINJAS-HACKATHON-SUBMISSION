@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { ReviewStep } from '@/features/reporting/steps/ReviewStep';
+import { SuccessStep } from '@/features/reporting/steps/SuccessStep';
 import { clearReportDraft } from '@/lib/report-draft-persistence';
 import { resetMockAuthSession } from '@/services/mock/mockAuth';
 import { useAuthStore } from '@/store/authStore';
@@ -101,7 +102,6 @@ describe('ReportReviewStep', () => {
     await waitFor(() => {
       expect(useReportDraftStore.getState().draft.submittedReportId).toBeTruthy();
     });
-    const { SuccessStep } = await import('@/features/reporting/steps/SuccessStep');
     rerender(
       <MemoryRouter>
         <SuccessStep />

@@ -1,10 +1,10 @@
 import { useEffect, useRef } from 'react';
 import { fileToDataUrl } from '@/services/ai/grok-client';
-import { grokGenerateReportCopy } from '@/services/ai/grokAI';
+import { isAiGatewayEnabled } from '@/services/ai/gateway-config';
+import { gatewayGenerateReportCopy } from '@/services/ai/gatewayAIService';
 import { services } from '@/services/registry';
 import { getMediaFile } from '@/store/reportMediaFiles';
 import { useReportDraftStore } from '@/store/reportDraftStore';
-import { hasGrokApiKey } from '@/services/ai/grok-client';
 
 /** Runs AI assist when description is long enough; never blocks manual edits. */
 export function useReportAIAssist() {
@@ -23,7 +23,7 @@ export function useReportAIAssist() {
       const firstPhoto = draft.mediaAttachments.find((a) => a.type === 'photo');
       let imageUrl: string | undefined = firstPhoto?.previewUrl;
       const file = firstPhoto ? getMediaFile(firstPhoto.id) : undefined;
-      if (file && hasGrokApiKey()) {
+      if (file && isAiGatewayEnabled()) {
         try {
           imageUrl = await fileToDataUrl(file);
         } catch {
@@ -49,9 +49,9 @@ export function useReportAIAssist() {
         let summary = draft.aiSuggestions?.summary;
         let suggestedTitle = draft.aiSuggestions?.suggestedTitle;
 
-        if (hasGrokApiKey()) {
+        if (isAiGatewayEnabled()) {
           try {
-            const copy = await grokGenerateReportCopy(
+            const copy = await gatewayGenerateReportCopy(
               draft.description,
               categoryResult.category,
               imageUrl,
